@@ -5,7 +5,7 @@ node_modules
 .env
 .next
 .vercel
-
+.env.*
 # Payload default media upload directory
 public/media/
 
@@ -19,3 +19,4 @@ node_modules/
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+.env*.local
