@@ -72,6 +72,7 @@ export interface Config {
     media: Media;
     categories: Category;
     users: User;
+    themes: Theme;
     redirects: Redirect;
     forms: Form;
     'form-submissions': FormSubmission;
@@ -88,6 +89,7 @@ export interface Config {
     media: MediaSelect<false> | MediaSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
+    themes: ThemesSelect<false> | ThemesSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
@@ -735,6 +737,31 @@ export interface Form {
   createdAt: string;
 }
 /**
+ * Site theme configuration, including styles and settings.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "themes".
+ */
+export interface Theme {
+  id: number;
+  name: string;
+  /**
+   * Define CSS variables or styles in JSON format. Example: { "primaryColor": "#007bff", "fontFamily": "Inter, sans-serif" }
+   */
+  styles?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  active?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects".
  */
@@ -926,6 +953,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'users';
         value: number | User;
+      } | null)
+    | ({
+        relationTo: 'themes';
+        value: number | Theme;
       } | null)
     | ({
         relationTo: 'redirects';
@@ -1290,6 +1321,17 @@ export interface UsersSelect<T extends boolean = true> {
         createdAt?: T;
         expiresAt?: T;
       };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "themes_select".
+ */
+export interface ThemesSelect<T extends boolean = true> {
+  name?: T;
+  styles?: T;
+  active?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
