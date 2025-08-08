@@ -357,15 +357,6 @@ export interface Category {
   title: string;
   slug?: string | null;
   slugLock?: boolean | null;
-  parent?: (number | null) | Category;
-  breadcrumbs?:
-    | {
-        doc?: (number | null) | Category;
-        url?: string | null;
-        label?: string | null;
-        id?: string | null;
-      }[]
-    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -737,7 +728,7 @@ export interface Form {
   createdAt: string;
 }
 /**
- * Site theme configuration, including styles and settings.
+ * Upravljajte različitim vizuelnim temama za vašu web stranicu. Svaka tema uključuje svoj naslov, logo i stilove. Samo jedna tema može biti aktivna u jednom trenutku.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "themes".
@@ -746,9 +737,21 @@ export interface Theme {
   id: number;
   name: string;
   /**
-   * Define CSS variables or styles in JSON format. Example: { "primaryColor": "#007bff", "fontFamily": "Inter, sans-serif" }
+   * Naslov sajta koji će biti prikazan kada je ova tema aktivna.
    */
-  styles?:
+  themeSiteTitle: string;
+  /**
+   * Logo koji će biti prikazan kada je ova tema aktivna.
+   */
+  themeSiteLogo?: (number | null) | Media;
+  /**
+   * Samo jedna tema može biti označena kao aktivna. Kada se sačuva, ovo će aktivirati ovu temu i deaktivirati ostale.
+   */
+  active?: boolean | null;
+  /**
+   * Unesite svoje CSS varijable kao JSON objekat (npr. {"primary-bg": "#ffffff", "primary-color": "#333333", "text-color": "#000000"}). Ove varijable se koriste za stilizovanje teme.
+   */
+  styles:
     | {
         [k: string]: unknown;
       }
@@ -757,7 +760,10 @@ export interface Theme {
     | number
     | boolean
     | null;
-  active?: boolean | null;
+  /**
+   * Tekst koji se prikazuje u fusnoti kada je ova tema aktivna.
+   */
+  footerText?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1287,15 +1293,6 @@ export interface CategoriesSelect<T extends boolean = true> {
   title?: T;
   slug?: T;
   slugLock?: T;
-  parent?: T;
-  breadcrumbs?:
-    | T
-    | {
-        doc?: T;
-        url?: T;
-        label?: T;
-        id?: T;
-      };
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1328,8 +1325,11 @@ export interface UsersSelect<T extends boolean = true> {
  */
 export interface ThemesSelect<T extends boolean = true> {
   name?: T;
-  styles?: T;
+  themeSiteTitle?: T;
+  themeSiteLogo?: T;
   active?: T;
+  styles?: T;
+  footerText?: T;
   updatedAt?: T;
   createdAt?: T;
 }

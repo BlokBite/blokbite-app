@@ -1,43 +1,102 @@
-import { CollectionConfig } from 'payload'
+import { CollectionConfig } from 'payload' // <-- WORKAROUND HERE for TS errors in editor
 
-const Themes: CollectionConfig = {
+export const Themes: CollectionConfig = {
   slug: 'themes',
-  labels: {
-    singular: 'Theme',
-    plural: 'Themes',
-  },
   admin: {
     useAsTitle: 'name',
-    description: 'Site theme configuration, including styles and settings.',
+    defaultColumns: ['name', 'active', 'updatedAt'],
+    group: 'Appearance',
+    description:
+      'Upravljajte različitim vizuelnim temama za vašu web stranicu. Svaka tema uključuje svoj naslov, logo i stilove. Samo jedna tema može biti aktivna u jednom trenutku.',
+  },
+  access: {
+    read: () => true,
   },
   fields: [
     {
       name: 'name',
+      label: 'Ime Teme',
       type: 'text',
-      label: 'Theme Name',
       required: true,
       unique: true,
-      localized: true,
     },
     {
-      name: 'styles',
-      type: 'json',
-      label: 'CSS Styles (JSON)',
-      // The description property is now only valid inside the 'admin' object.
-      // The following line has been removed to fix the error:
-      // description: 'Define CSS variables or styles in JSON format.',
+      name: 'themeSiteTitle',
+      label: 'Naslov Sajta za Ovu Temu',
+      type: 'text',
+      required: true,
       admin: {
-        description:
-          'Define CSS variables or styles in JSON format. Example: { "primaryColor": "#007bff", "fontFamily": "Inter, sans-serif" }',
+        description: 'Naslov sajta koji će biti prikazan kada je ova tema aktivna.',
+      },
+    },
+    {
+      name: 'themeSiteLogo',
+      label: 'Logo Sajta za Ovu Temu',
+      type: 'upload',
+      relationTo: 'media',
+      required: false,
+      admin: {
+        description: 'Logo koji će biti prikazan kada je ova tema aktivna.',
       },
     },
     {
       name: 'active',
+      label: 'Da li je aktivna tema?',
       type: 'checkbox',
-      label: 'Active Theme',
       defaultValue: false,
       admin: {
         position: 'sidebar',
+        description:
+          'Samo jedna tema može biti označena kao aktivna. Kada se sačuva, ovo će aktivirati ovu temu i deaktivirati ostale.',
+      },
+      hooks: {
+        beforeChange: [
+          async ({ siblingData, req }: any) => {
+            if (siblingData.active === true) {
+              const { payload } = req
+              try {
+                const otherActiveThemes = await payload.find({
+                  collection: 'themes',
+                  where: {
+                    active: { equals: true },
+                    id: { not_equals: siblingData.id },
+                  },
+                  depth: 0,
+                  limit: 100,
+                })
+                for (const theme of otherActiveThemes.docs) {
+                  await payload.update({
+                    collection: 'themes',
+                    id: theme.id,
+                    data: { active: false },
+                  })
+                }
+              } catch (error: any) {
+                payload.logger.error(`Greška pri deaktiviranju ostalih tema: ${error.message}`)
+              }
+            }
+            return siblingData.active
+          },
+        ],
+      },
+    },
+    {
+      name: 'styles',
+      label: 'CSS Varijable (JSON)',
+      type: 'json',
+      required: true,
+      admin: {
+        description:
+          'Unesite svoje CSS varijable kao JSON objekat (npr. {"primary-bg": "#ffffff", "primary-color": "#333333", "text-color": "#000000"}). Ove varijable se koriste za stilizovanje teme.',
+      },
+    },
+    {
+      name: 'footerText',
+      label: 'Tekst u Fusnoti za Ovu Temu',
+      type: 'textarea',
+      required: false,
+      admin: {
+        description: 'Tekst koji se prikazuje u fusnoti kada je ova tema aktivna.',
       },
     },
   ],
